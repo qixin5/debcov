@@ -1,0 +1,20 @@
+#!/bin/bash
+
+DEBCOVDIR=/home/qxin6/debcov #TODO: Change this!
+
+srcf=$1
+covfd=$2
+
+if [ ! -f lineinfo.txt ]; then
+    ${DEBCOVDIR}/build/bin/instrumenter -g statement test.sh ${srcf} >lineinfo.txt
+fi
+
+if [ -d ${covfd} ]; then
+    java -cp :${DEBCOVDIR}/build/java:${DEBCOVDIR}/lib/java/* edu.gatech.cc.debcov.GCovBasedCoverageMerger binary ${covfd} >cov_merged
+    covf=cov_merged
+else
+    covf=${covfd}
+fi
+
+srcfname=$(basename ${srcf})
+java -cp :${DEBCOVDIR}/build/java:${DEBCOVDIR}/lib/java/* edu.gatech.cc.debcov.GCovBasedCodeRemover ${srcf} lineinfo.txt ${covf} >${srcfname}.reduced.c
